@@ -4,23 +4,15 @@ set -e
 
 export ANSIBLE_CONFIG=.ansible.cfg
 
-vms=(login-1)
+vms=(login-1 login-2)
 
 # delete all, if any, currently existing VMs that we are going to configure from scratch
 delete () {
 	printf "deleting currently running VMs\n"
 	for vm in ${vms[@]}; do
-		multipass delete $vm && printf "deleted $vm\n" || continue
+		multipass delete -p $vm && printf "deleted $vm\n" || continue
 	done
 }
-
-
-# purge the list of deleted VMs
-purge (){
-	printf "\npurging deleted VMs\n"
-	multipass purge
-}
-
 
 # start all VMs in a loop and configure a bare minimum with the cloud-init.yaml file
 launch () {
@@ -29,7 +21,6 @@ launch () {
 		multipass launch --name $vm --cloud-init cloud-init.yaml 20.04
 	done
 }
-
 
 # create a fresh hosts file so you don't need to edit the ip addresses manually
 list () {
@@ -47,7 +38,6 @@ case $1 in
 
 	all)
 		delete
-		purge
 		launch
 		list
 		ansible
@@ -55,12 +45,10 @@ case $1 in
 
 	purge)
 		delete
-		purge
 	;;
 
 	launch)
 		delete
-		purge
 		launch
 		list
 	;;
